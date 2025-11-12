@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import asyncStorage from "@react-native-async-storage/async-storage";
 // Base URL for your API - change this to your server URL
 // IMPORTANT: For React Native on physical devices, use your computer's IP address instead of localhost
@@ -7,6 +8,25 @@ import asyncStorage from "@react-native-async-storage/async-storage";
 const API_BASE_URL = "http://localhost:3000/";
 
 // API Calls for Login Signup and getCurrentUser
+
+// Helper functions for Tokens
+
+export const getToken = () => {
+
+};
+
+export const saveToken = async(token) => {
+  try {
+      const token = await AsyncStorage.setItem('authToken' , token)
+      return token
+  } catch (error) {
+    console.error("Token cannot be Saved")
+    return null
+  }
+};
+
+
+
 
 const apiRequest = async (
   endpoint,
@@ -47,10 +67,10 @@ const apiRequest = async (
 export const authApi = {
   // signup
   signup: async (name, email, password) => {
-     return apiRequest('/api/auth/signup',"POST" , {name , email , password} )
+    return apiRequest("/api/auth/signup", "POST", { name, email, password });
   },
 
   login: async (email, password) => {
-     return apiRequest('/api/auth/login',"POST" , { email , password} )
+    return apiRequest("/api/auth/login", "POST", { email, password });
   },
 };
