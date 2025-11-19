@@ -7,7 +7,7 @@ export default function LoginScreen() {
     <KeyboardAvoidingView 
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1 bg-emerald-50"
+      className="flex-1 bg-emerald-60"
     >
       {/* Decorative blobs */}
       <View className="absolute -top-16 -right-16 h-52 w-52 rounded-full bg-emerald-200/60" />

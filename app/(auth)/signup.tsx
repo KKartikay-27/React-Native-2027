@@ -1,6 +1,7 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { useState } from 'react';
-import {authApi} from '../../utils/api.js'
+import {authApi, saveToken} from '../../utils/api.js'
+import { useRouter } from 'expo-router';
 
 
 
@@ -10,16 +11,63 @@ export default function SignupScreenUI() {
   const [email , setEmail] = useState('')
   const [password , setPassword] = useState('')
   const [loading , setLoading] = useState(false)
-  // const [errors , setErros] = useState()
+  const [error, setError] = useState('')
+  const router = useRouter();
 
 
   const handleSignUp = async ()=>{
-     try {
-      const response =  await authApi.signup(name.trim(),email.trim(), password)
-       console.log(response)
-     } catch (error) {
-       console.error("Error on Sign up")
-     }
+    // Reset error
+    setError('');
+
+    // Validation
+    if (!name.trim()) {
+      setError('Please enter your name');
+      return;
+    }
+
+    if (!email.trim()) {
+      setError('Please enter your email');
+      return;
+    }
+
+    if (!email.includes('@')) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    if (!password || password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await authApi.signup(name.trim(), email.trim(), password);
+      
+      if (response.success && response.data?.token) {
+        // Save token
+        await saveToken(response.data.token);
+        
+        // Show success message
+        Alert.alert('Success', 'Account created successfully!', [
+          {
+            text: 'OK',
+            onPress: () => {
+              // Navigate to home or login screen
+              router.replace('/');
+            }
+          }
+        ]);
+      } else {
+        setError(response.message || 'Sign up failed. Please try again.');
+      }
+    } catch (error) {
+      console.error("Error on Sign up:", error);
+     
+    } finally {
+      setLoading(false);
+    }
   }
 
 
@@ -57,6 +105,12 @@ export default function SignupScreenUI() {
             </Text>
 
             <View style={styles.form} className="w-full">
+              {error ? (
+                <View className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl">
+                  <Text className="text-red-700 text-sm">{error}</Text>
+                </View>
+              ) : null}
+              
               <View style={styles.inputContainer} className="mb-4">
                 <Text style={styles.label} className="text-emerald-800 mb-2 font-medium">
                   Name
@@ -119,14 +173,19 @@ export default function SignupScreenUI() {
               </Text>
 
               <TouchableOpacity 
-                style={styles.signupButton}
+                style={[styles.signupButton, loading && styles.signupButtonDisabled]}
                 className="rounded-2xl py-4 items-center mt-4 bg-emerald-600 shadow"
-                 onPress={handleSignUp}
+                onPress={handleSignUp}
                 activeOpacity={0.8}
+                disabled={loading}
               >
-                <Text style={styles.signupButtonText} className="text-white text-lg font-semibold">
-                  Create Account
-                </Text>
+                {loading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.signupButtonText} className="text-white text-lg font-semibold">
+                    Create Account
+                  </Text>
+                )}
               </TouchableOpacity>
 
               <View className="flex-row items-center my-4">
@@ -229,6 +288,9 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: '700',
+  },
+  signupButtonDisabled: {
+    opacity: 0.6,
   },
   linkButton: {
     marginTop: 24,
