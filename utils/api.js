@@ -5,7 +5,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 // Example: 'http://192.168.1.100:3000/api' (replace with your actual IP)
 // For iOS Simulator/Android Emulator, you can use 'http://localhost:3000/api'
 // To find your IP: On Mac/Linux run 'ifconfig', on Windows run 'ipconfig'
-const API_BASE_URL = "http://localhost:3000/";
+const API_BASE_URL = "http://localhost:3000";
 
 // API Calls for Login Signup and getCurrentUser
 
@@ -52,15 +52,49 @@ const apiRequest = async (
     }
 
     const response = await fetch(url, config);
-    const data = await response.json();
+    
+    // Check if response is JSON
+    const contentType = response.headers.get("content-type");
+    let data;
+    
+    try {
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        // If not JSON, get text response (likely HTML error page)
+        const text = await response.text();
+        console.error("Non-JSON response received:", text.substring(0, 200));
+        
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status} ${response.statusText}. Please check if the server is running at ${url}`);
+        }
+        throw new Error("Server returned non-JSON response. Please check the API endpoint.");
+      }
+    } catch (parseError) {
+      // If JSON parsing fails, it might be HTML or other content
+      if (parseError instanceof SyntaxError && parseError.message.includes("JSON")) {
+        throw new Error(`Server returned invalid JSON. Please check if the server is running at ${url}. The server might be returning an HTML error page.`);
+      }
+      throw parseError;
+    }
 
     if (!response.ok) {
-      throw new Error(data.message || "Something went wrong");
+      const errorMessage = data?.message || data?.error || `Server error: ${response.status}`;
+      throw new Error(errorMessage);
     }
 
     return data;
   } catch (error) {
-    throw error;
+    // If it's already an Error object, re-throw it
+    if (error instanceof Error) {
+      throw error;
+    }
+    // Handle JSON parse errors specifically
+    if (error && error.message && error.message.includes("JSON")) {
+      throw new Error("Server returned invalid response. Please check if the server is running and the endpoint is correct.");
+    }
+    // Otherwise, wrap it in an Error
+    throw new Error(error.message || "Network error occurred");
   }
 };
 

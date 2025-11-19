@@ -44,27 +44,32 @@ export default function SignupScreenUI() {
 
     try {
       const response = await authApi.signup(name.trim(), email.trim(), password);
+      console.log('Signup response:', response);
       
-      if (response.success && response.data?.token) {
+      if (response && response.success && response.data?.token) {
         // Save token
         await saveToken(response.data.token);
+        console.log('Token saved successfully');
         
         // Show success message
         Alert.alert('Success', 'Account created successfully!', [
           {
             text: 'OK',
             onPress: () => {
-              // Navigate to home or login screen
-              router.replace('/');
+              // Navigate to home screen
+              router.replace('/(main)/home');
             }
           }
         ]);
       } else {
-        setError(response.message || 'Sign up failed. Please try again.');
+        const errorMsg = response?.message || 'Sign up failed. Please try again.';
+        setError(errorMsg);
+        console.log('Signup failed:', errorMsg);
       }
-    } catch (error) {
-      console.log(error);
-     
+    } catch (error: any) {
+      console.error("Error on Sign up:", error);
+      const errorMessage = error?.message || error?.toString() || 'An error occurred. Please try again.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
