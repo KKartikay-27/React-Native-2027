@@ -55,7 +55,7 @@ export default function SignupScreenUI() {
             text: 'OK',
             onPress: () => {
               // Navigate to home or login screen
-              router.replace('/');
+              router.replace('/(main)/home');
             }
           }
         ]);
