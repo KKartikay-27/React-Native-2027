@@ -39,6 +39,7 @@ const home = () => {
       <ScrollView
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
+        nestedScrollEnabled={true}
       >
         <View className="bg-emerald-600 px-4 pt-2 pb-4">
           <View className="flex-row items-center justify-between mb-3">
@@ -102,6 +103,7 @@ const home = () => {
             data={categories}
             horizontal
             showsHorizontalScrollIndicator={false}
+            keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
               <View className="items-center mr-4">
                 <View
@@ -114,12 +116,14 @@ const home = () => {
                 </Text>
               </View>
             )}
+            scrollEnabled={true}
+            nestedScrollEnabled={true}
           />
         </View>
 
         
-        {/* BEST SELLERS */}
-        {/* <View className="px-4 py-4">
+        
+        <View className="px-4 py-4">
           <View className="flex-row items-center justify-between mb-3">
             <Text className="text-lg font-bold text-gray-800">
               Best Sellers
@@ -131,11 +135,11 @@ const home = () => {
             </TouchableOpacity>
           </View>
 
-          <FlatList
+          {/* <FlatList
             data={products}
             horizontal
             showsHorizontalScrollIndicator={false}
-
+            keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
               <View
                 className="bg-white rounded-xl p-3 mr-3 shadow-sm border border-gray-100"
@@ -165,10 +169,12 @@ const home = () => {
                 </View>
               </View>
             )}
-          />
+            scrollEnabled={true}
+            nestedScrollEnabled={true}
+          /> */}
         </View>
 
-        {/* EXTRA SPACE */}
+        
        
       </ScrollView>
     </SafeAreaView>

@@ -5,7 +5,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 // Example: 'http://192.168.1.100:3000/api' (replace with your actual IP)
 // For iOS Simulator/Android Emulator, you can use 'http://localhost:3000/api'
 // To find your IP: On Mac/Linux run 'ifconfig', on Windows run 'ipconfig'
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = "http://localhost:3000/";
 
 // API Calls for Login Signup and getCurrentUser
 
@@ -41,17 +41,15 @@ const apiRequest = async (
     };
 
     // check for jwt token
+
     const config = {
       method,
       headers,
     };
-    
 
     if (body && (method === "POST" || method === "PUT" || method === "PATCH")) {
       config.body = JSON.stringify(body);
     }
-
-    
 
     const response = await fetch(url, config);
     const data = await response.json();

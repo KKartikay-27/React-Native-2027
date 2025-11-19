@@ -55,7 +55,7 @@ export default function SignupScreenUI() {
             text: 'OK',
             onPress: () => {
               // Navigate to home or login screen
-              router.replace('/(main)/home');
+              router.replace('/');
             }
           }
         ]);
@@ -63,7 +63,7 @@ export default function SignupScreenUI() {
         setError(response.message || 'Sign up failed. Please try again.');
       }
     } catch (error) {
-      console.error("Error on Sign up:", error);
+      console.log(error);
      
     } finally {
       setLoading(false);
