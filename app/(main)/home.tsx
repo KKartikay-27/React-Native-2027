@@ -6,11 +6,36 @@ import {
   View,
   TextInput,
   FlatList,
+  Alert,
 } from "react-native";
 import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+import { authApi } from "../../utils/api.js";
 
 const home = () => {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    Alert.alert(
+      "Logout",
+      "Are you sure you want to logout?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Logout",
+          style: "destructive",
+          onPress: async () => {
+            await authApi.logout();
+            router.replace("/");
+          },
+        },
+      ]
+    );
+  };
   // Minimal placeholder data (UI only)
   const categories = [
     { id: 1, name: "Fruits", icon: "🍎", color: "bg-red-100" },
@@ -34,7 +59,7 @@ const home = () => {
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView  className="flex-1 bg-white">
       {/* Header */}
       <ScrollView
         showsHorizontalScrollIndicator={false}
@@ -53,11 +78,21 @@ const home = () => {
               </View>
             </View>
 
-            <TouchableOpacity className="bg-white/20 px-3 py-2 rounded-full">
-              <Text className="text-white text-xs font-semibold">
-                📍 Change
-              </Text>
-            </TouchableOpacity>
+            <View className="flex-row gap-2">
+              <TouchableOpacity className="bg-white/20 px-3 py-2 rounded-full">
+                <Text className="text-white text-xs font-semibold">
+                  📍 Change
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                className="bg-white/20 px-3 py-2 rounded-full"
+                onPress={handleLogout}
+              >
+                <Text className="text-white text-xs font-semibold">
+                  Logout
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* Search Bar */}
@@ -135,7 +170,7 @@ const home = () => {
             </TouchableOpacity>
           </View>
 
-          {/* <FlatList
+          <FlatList
             data={products}
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -171,7 +206,7 @@ const home = () => {
             )}
             scrollEnabled={true}
             nestedScrollEnabled={true}
-          /> */}
+          />
         </View>
 
         

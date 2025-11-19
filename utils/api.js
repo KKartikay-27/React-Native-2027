@@ -11,8 +11,14 @@ const API_BASE_URL = "http://localhost:3000";
 
 // Helper functions for Tokens
 
-export const getToken = () => {
-
+export const getToken = async () => {
+  try {
+    const token = await AsyncStorage.getItem('authToken');
+    return token;
+  } catch (error) {
+    console.error("Token cannot be retrieved:", error);
+    return null;
+  }
 };
 
 export const saveToken = async(token) => {
@@ -22,6 +28,16 @@ export const saveToken = async(token) => {
   } catch (error) {
     console.error("Token cannot be Saved")
     return null
+  }
+};
+
+export const removeToken = async () => {
+  try {
+    await AsyncStorage.removeItem('authToken');
+    return true;
+  } catch (error) {
+    console.error("Token cannot be removed:", error);
+    return false;
   }
 };
 
@@ -40,7 +56,15 @@ const apiRequest = async (
       "Content-Type": "application/json",
     };
 
-    // check for jwt token
+    // Add JWT token to headers if authentication is required
+    if (requiresAuth) {
+      const token = await getToken();
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      } else {
+        throw new Error("No authentication token found. Please login again.");
+      }
+    }
 
     const config = {
       method,
@@ -107,5 +131,16 @@ export const authApi = {
 
   login: async (email, password) => {
     return apiRequest("/api/auth/login", "POST", { email, password });
+  },
+
+  // Get current user (verify token)
+  getCurrentUser: async () => {
+    return apiRequest("/api/auth/me", "GET", null, true);
+  },
+
+  // Logout
+  logout: async () => {
+    await removeToken();
+    return { success: true, message: "Logged out successfully" };
   },
 };

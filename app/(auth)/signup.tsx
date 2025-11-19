@@ -206,7 +206,7 @@ export default function SignupScreenUI() {
               <TouchableOpacity 
                 style={styles.linkButton}
                 className="mt-6 items-center"
-                // No onPress – purely presentational
+                onPress={() => router.push('/(auth)/login')}
                 activeOpacity={0.8}
               >
                 <Text style={styles.linkText} className="text-emerald-700">

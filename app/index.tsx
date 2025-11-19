@@ -1,10 +1,50 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React from 'react'
+import { StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native'
+import React, { useEffect, useState } from 'react'
 import {useRouter} from 'expo-router'
+import { getToken, authApi } from '../utils/api.js'
 
 const index = () => {
-
   const router = useRouter()
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    checkAuthStatus()
+  }, [])
+
+  const checkAuthStatus = async () => {
+    try {
+      const token = await getToken()
+      
+      if (token) {
+        // Verify token by getting current user
+        try {
+          const response = await authApi.getCurrentUser()
+          if (response && response.success) {
+            // Token is valid, redirect to home
+            router.replace('/(main)/home')
+            return
+          }
+        } catch (error) {
+          // Token is invalid, clear it and show login screen
+          console.log('Token verification failed:', error)
+        }
+      }
+      // No token or invalid token, stay on login screen
+      setLoading(false)
+    } catch (error) {
+      console.error('Error checking auth status:', error)
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#1E88E5" />
+      </View>
+    )
+  }
+
   return (
     <View style={styles.container}>
        <View style={styles.content}>
