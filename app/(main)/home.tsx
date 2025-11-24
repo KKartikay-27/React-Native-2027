@@ -8,33 +8,58 @@ import {
   FlatList,
   Alert,
 } from "react-native";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { authApi } from "../../utils/api.js";
+import LocationPicker from "../../components/LocationPicker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const home = () => {
   const router = useRouter();
+  const [locationPickerVisible, setLocationPickerVisible] = useState(false);
+  const [locationName, setLocationName] = useState("Home");
+
+  useEffect(() => {
+    loadSavedLocation();
+  }, []);
+
+  const loadSavedLocation = async () => {
+    try {
+      const saved = await AsyncStorage.getItem("userLocation");
+      if (saved) {
+        const location = JSON.parse(saved);
+        setLocationName(location.address || "Home");
+      }
+    } catch (error) {
+      console.error("Error loading location:", error);
+    }
+  };
+
+  const handleLocationSelect = async (location: {
+    latitude: number;
+    longitude: number;
+    address?: string;
+  }) => {
+    setLocationName(location.address || "Home");
+    await AsyncStorage.setItem("userLocation", JSON.stringify(location));
+  };
 
   const handleLogout = () => {
-    Alert.alert(
-      "Logout",
-      "Are you sure you want to logout?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          await authApi.logout();
+          router.replace("/");
         },
-        {
-          text: "Logout",
-          style: "destructive",
-          onPress: async () => {
-            await authApi.logout();
-            router.replace("/");
-          },
-        },
-      ]
-    );
+      },
+    ]);
   };
   // Minimal placeholder data (UI only)
   const categories = [
@@ -59,7 +84,7 @@ const home = () => {
   ];
 
   return (
-    <SafeAreaView  className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
       <ScrollView
         showsHorizontalScrollIndicator={false}
@@ -71,26 +96,31 @@ const home = () => {
             <View className="flex-1">
               <Text className="text-white text-xs opacity-90">Delivery to</Text>
               <View className="flex-row items-center">
-                <Text className="text-white text-base font-bold mr-1">
-                  Home
+                <Text
+                  className="text-white text-base font-bold mr-1"
+                  numberOfLines={1}
+                  style={{ maxWidth: "70%" }}
+                >
+                  {locationName}
                 </Text>
                 <Text className="text-white text-lg">▼</Text>
               </View>
             </View>
 
             <View className="flex-row gap-2">
-              <TouchableOpacity className="bg-white/20 px-3 py-2 rounded-full">
+              <TouchableOpacity
+                className="bg-white/20 px-3 py-2 rounded-full"
+                onPress={() => setLocationPickerVisible(true)}
+              >
                 <Text className="text-white text-xs font-semibold">
                   📍 Change
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity 
+              <TouchableOpacity
                 className="bg-white/20 px-3 py-2 rounded-full"
                 onPress={handleLogout}
               >
-                <Text className="text-white text-xs font-semibold">
-                  Logout
-                </Text>
+                <Text className="text-white text-xs font-semibold">Logout</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -156,8 +186,6 @@ const home = () => {
           />
         </View>
 
-        
-        
         <View className="px-4 py-4">
           <View className="flex-row items-center justify-between mb-3">
             <Text className="text-lg font-bold text-gray-800">
@@ -208,10 +236,10 @@ const home = () => {
             nestedScrollEnabled={true}
           />
         </View>
-
-        
-       
       </ScrollView>
+
+      {/* Location Picker Modal */}
+      <LocationPicker visible={locationPickerVisible} />
     </SafeAreaView>
   );
 };
